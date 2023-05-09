@@ -1,0 +1,6 @@
+include('../../../../catalog-service-config/Tiltfile')
+include('../../../../edge-service/Titlfile')
+include('../../../../order-service/Titlfile')
+include('../../../../catalog-service/Tiltfile')
+
+update_settings(max_parallel_updates=1)
