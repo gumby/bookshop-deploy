@@ -22,6 +22,8 @@ services:
     depends_on:
       - polar-postgres
       - catalog-config-service
+      - dispatcher-service
+      - polar-rabbitmq
     image: "order-service"
     container_name: "order-service"
     ports:
@@ -31,6 +33,19 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_CLOUD_CONFIG_URI=http://catalog-config-service:8888
       - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_order
+      - SPRING_RABBITMQ_HOST=polar-rabbitmq
+      - POLAR_CATALOG_SERVICE_URI=http://catalog-service:9001
+
+  dispatcher-service:
+    depends_on:
+      - polar-rabbitmq
+      - catalog-config-service
+    image: "dispatcher-service"
+    container_name: "dispatcher-service"
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - SPRING_RABBITMQ_HOST=polar-rabbitmq
+      - SPRING_CLOUD_CONFIG_URI=http://catalog-config-service:8888
 
   edge-service:
     depends_on:
@@ -52,6 +67,14 @@ services:
     ports:
       - 8888:8888
 
+  polar-ui:
+    image: "ghcr.io/polarbookshop/polar-ui:v1"
+    container_name: "polar-ui"
+    ports:
+      - 9004:9004
+    environment:
+      - PORT=9004
+
   polar-postgres:
     image: "postgres:14.4"
     container_name: "polar-postgres"
@@ -68,3 +91,24 @@ services:
     container_name: "polar-redis"
     ports:
       - 6379:6379
+
+  polar-rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: polar-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  polar-keycloak:
+    image: quay.io/keycloak/keycloak:19.0
+    container_name: "polar-keycloak"
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=user
+      - KEYCLOAK_ADMIN_PASSWORD=password
+    ports:
+      - 8080:8080
