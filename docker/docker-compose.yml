@@ -17,6 +17,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
       - SPRING_PROFILES_ACTIVE=testdata
       - SPRING_CLOUD_CONFIG_URI=http://catalog-config-service:8888
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://polar-keycloak:8080/realms/PolarBookshop
 
   order-service:
     depends_on:
@@ -35,6 +36,7 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_RABBITMQ_HOST=polar-rabbitmq
       - POLAR_CATALOG_SERVICE_URI=http://catalog-service:9001
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://polar-keycloak:8080/realms/PolarBookshop
 
   dispatcher-service:
     depends_on:
